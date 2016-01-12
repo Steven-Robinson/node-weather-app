@@ -1,0 +1,28 @@
+{
+  "name": "weather-app",
+  "version": "1.0.0",
+  "description": "Save periodic temperature so I can make a graph and compare and plan.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Steven-Robinson/node-weather-app.git"
+  },
+  "keywords": [
+    "weather",
+    "temperature",
+    "api.openweathermap.org"
+  ],
+  "author": "Steven Robinson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Steven-Robinson/node-weather-app/issues"
+  },
+  "homepage": "https://github.com/Steven-Robinson/node-weather-app#readme",
+  "dependencies": {
+    "request": "^2.67.0",
+    "sqlite3": "^3.1.1"
+  }
+}
