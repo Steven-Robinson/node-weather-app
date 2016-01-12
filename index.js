@@ -17,7 +17,7 @@ var request = require('request'),
 		return 'http://' + url.replace('http://', '') + '?' + qs;
 	}(service, config)),
 
-	mybody;
+	content;
 
 if (process.argv[2] == 'reset') {
 	db.run("DROP table weather_data");
@@ -25,15 +25,15 @@ if (process.argv[2] == 'reset') {
 
 request(url, function (err, res, body) {
 	if (!err && res.statusCode == 200) {
-		mybody = body;
+		content = body;
 	}
 
 	db.serialize(function() {
 		db.run("CREATE TABLE if not exists weather_data (data TEXT)");
 		
 		var stmt = db.prepare("INSERT INTO weather_data VALUES (?)");
-		
-		stmt.run(mybody);
+
+		stmt.run(content);
 		stmt.finalize();
 
 		db.each("SELECT rowid AS id, data FROM weather_data", function(err, row) {

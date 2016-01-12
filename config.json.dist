@@ -1,4 +1,5 @@
 {
-	"APPID": "",
-	"q":"liverpool,uk"
+	"APPID":"",
+	"q":"liverpool,uk",
+	"units":"metric"
 }
