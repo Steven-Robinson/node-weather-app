@@ -1,46 +1,66 @@
-/* get some weather stats and put em in a sqlite db */
 
-var request = require('request'),
+var WEATHER_MODULE = (function () {
 
-	querystring = require('querystring'),
+	var weather_module = {},
+		service = 'api.openweathermap.org/data/2.5/weather',
+		request,
+		query_string,
+		sqlite3,
+		db,
+		config,
+		url,
+		content,
 
-	sqlite3 = require('sqlite3').verbose(),
+		init = function () {
+			request = require('request');
+			query_string = require('querystring');
+			sqlite3 = require('sqlite3').verbose();
+			db = new sqlite3.Database('db.db');
+			config = require('./config.json');
 
-	db = new sqlite3.Database('mydb.db'),
+			url = (function (url, params) {
+				qs = query_string.stringify(params);
+				return 'http://' + url.replace('http://', '') + '?' + qs;
+			}(service, config));
 
-	config = require('./config.json'),
+			if (process.argv[2] == 'reset') {
+				db.run('DROP table weather_data');
+			}
 
-	service = 'api.openweathermap.org/data/2.5/weather',
+			db.run('CREATE TABLE if not exists weather_data (data TEXT)');
+		},
 
-	url = (function (url, params) {
-		qs = querystring.stringify(params);
-		return 'http://' + url.replace('http://', '') + '?' + qs;
-	}(service, config)),
+		insertData = function () {
+			init();
 
-	content;
+			request(url, function (err, res, body) {
+				if (err && res.statusCode != 200) {
+					return console.log([err, res]);
+				}
 
-if (process.argv[2] == 'reset') {
-	db.run("DROP table weather_data");
-}
+				content = body;
 
-request(url, function (err, res, body) {
-	if (!err && res.statusCode == 200) {
-		content = body;
-	}
+				db.serialize(function() {
+					var stmt = db.prepare('INSERT INTO weather_data VALUES (?)');
 
-	db.serialize(function() {
-		db.run("CREATE TABLE if not exists weather_data (data TEXT)");
-		
-		var stmt = db.prepare("INSERT INTO weather_data VALUES (?)");
+					stmt.run(content);
+					stmt.finalize();
+				});
 
-		stmt.run(content);
-		stmt.finalize();
+				db.close();
+			});
+		},
 
-		db.each("SELECT rowid AS id, data FROM weather_data", function(err, row) {
-			console.log(row.id + ": " + row.data);
-		});
-	});
+		getData = function () {
+			db.each('SELECT rowid AS id, data FROM weather_data', function(err, row) {
+				console.log(row.id + ": " + row.data);
+			});
+		};
 
-	db.close();
-});
+	weather_module.getData = getData;
 
+	return weather_module;
+
+}());
+
+WEATHER_MODULE.getData();
